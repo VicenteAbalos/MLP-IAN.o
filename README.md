@@ -1,2 +1,2 @@
 # MLP-IAN.o
-Skin identification model
+Machine Learning Program--Inteligencia Artificial No--Optimizada
