@@ -74,7 +74,7 @@ class Simple_model(nn.Module):
 
 dataset=np.load('skin_nskin.npy')
 
-epochs = 10
+epochs = 2
 batch_size = 1
 train_split = 0.8
 
@@ -144,3 +144,4 @@ for epoch in range(epochs):
     epoch_accuracy.append(acc/len(val_loader))
     val_losses.append(val_loss)
 print(losses)
+print(val_losses)
