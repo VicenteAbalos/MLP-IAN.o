@@ -119,7 +119,7 @@ for epoch in range(epochs):
       inputs=torch.tensor([[int(inputs[0][0]),int(inputs[0][1]),int(inputs[0][2])]])
       inputs = inputs.to(device=device, dtype=torch.float32)
       labels = torch.tensor([[int(labels[0][-1])]])
-      labels = labels.to(device=device, dtype=torch.long)
+      labels = labels.to(device=device, dtype=torch.float32)
 
       optimizer.zero_grad()
 
