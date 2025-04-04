@@ -89,3 +89,53 @@ loss_fn = nn.BCELoss()
 optimizer = torch.optim.Adam(model.parameters())
 
 print(dataset[0], n_train,n_val)
+
+device = 'cpu'
+losses = []
+val_losses = []
+epoch_accuracy = []
+
+model.to(device)
+
+model.train()
+
+for epoch in range(epochs):
+  acc = 0.0
+  val_loss = 0.0
+  epoch_loss = 0.0
+
+  for i, data in enumerate(train_loader):
+      print(i)
+      print(data)
+      inputs, labels = data
+
+      inputs = inputs.to(device=device, dtype=torch.float32)
+      labels = labels.to(device=device, dtype=torch.long)
+
+      optimizer.zero_grad()
+
+      outputs = model(inputs)
+
+      loss = loss_fn(outputs, labels)
+      loss.backward()
+      optimizer.step()
+
+      epoch_loss += loss.item()/len(train_loader)
+
+  losses.append(epoch_loss)
+
+  with torch.no_grad():
+    for i, data in enumerate(val_loader):
+      inputs, labels = data
+
+      inputs = inputs.to(device=device, dtype=torch.float32)
+      labels = labels.to(device=device, dtype=torch.long)
+
+      outputs = model(inputs)
+      val_loss += loss_fn(outputs, labels).item()/len(val_loader)
+
+      acc += (outputs.argmax(dim=1) == labels).sum().item()
+
+    epoch_accuracy.append(acc/len(val_loader))
+    val_losses.append(val_loss)
+print(losses)
