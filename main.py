@@ -44,3 +44,48 @@ class MNIST_Dataset(Dataset):
     image=self.preprocess(image)
 
     return image, label
+  
+class Simple_model(nn.Module):
+  def __init__(self, input_size, n_classes):
+    super(Simple_model, self).__init__()
+
+    self.flatten = nn.Flatten()
+
+    self.input_layer = nn.Linear(input_size, 8)
+
+    self.hidden_layer = nn.Linear(8, 16)
+
+    self.output_layer = nn.Linear(16, n_classes)
+
+    self.relu = nn.ReLU()
+
+  def forward(self, x):
+    x = self.flatten(x)
+    x = self.relu(self.input_layer(x))
+
+    x = self.relu(self.hidden_layer(x))
+
+    x = self.output_layer(x)
+    return x
+
+#dataset=MNIST_Dataset('skin_nskin.npy', (28, 28))
+
+dataset=np.load('skin_nskin.npy')
+
+epochs = 10
+batch_size = 1
+train_split = 0.8
+
+n_train = int(len(dataset) * train_split)
+n_val = len(dataset) - n_train
+train_set, val_set = random_split(dataset, [n_train, n_val], generator=torch.Generator().manual_seed(0))
+
+loader_args = dict(batch_size=batch_size, num_workers=0, pin_memory=True)
+train_loader = DataLoader(train_set, shuffle=True, **loader_args)
+val_loader = DataLoader(val_set, shuffle=False, drop_last=True, **loader_args)
+
+model = Simple_model(3, 1)
+loss_fn = nn.BCELoss()
+optimizer = torch.optim.Adam(model.parameters())
+
+print(dataset[0], n_train,n_val)
