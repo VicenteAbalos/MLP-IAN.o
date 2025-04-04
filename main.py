@@ -59,17 +59,20 @@ class Simple_model(nn.Module):
 
     self.relu = nn.ReLU()
 
+    self.sigmoid = nn.Sigmoid()
+
   def forward(self, x):
     print(x)
     x = self.flatten(x)
     print(x)
     print("hello world")
-    x = self.relu(self.input_layer(x))
+    x = self.input_layer(x)
     print("hello world")
     x = self.relu(self.hidden_layer(x))
 
-    x = self.output_layer(x)
+    x = self.sigmoid(self.output_layer(x))
     print("hello world")
+    print(x)
     return x
 
 #dataset=MNIST_Dataset('skin_nskin.npy', (28, 28))
@@ -110,11 +113,12 @@ for epoch in range(epochs):
 
   for i, data in enumerate(train_loader):
       print(i)
-      print(data[0][0:2])
+      print(data[0])
       inputs=data
       labels = data #inputs = data[0:2], labels = data[-1]
-
+      inputs=torch.tensor([[int(inputs[0][0]),int(inputs[0][1]),int(inputs[0][2])]])
       inputs = inputs.to(device=device, dtype=torch.float32)
+      labels = torch.tensor([[int(labels[0][-1])]])
       labels = labels.to(device=device, dtype=torch.long)
 
       optimizer.zero_grad()
