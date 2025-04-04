@@ -62,17 +62,12 @@ class Simple_model(nn.Module):
     self.sigmoid = nn.Sigmoid()
 
   def forward(self, x):
-    print(x)
     x = self.flatten(x)
-    print(x)
-    print("hello world")
     x = self.input_layer(x)
-    print("hello world")
     x = self.relu(self.hidden_layer(x))
 
     x = self.sigmoid(self.output_layer(x))
-    print("hello world")
-    print(x)
+    #print(x)
     return x
 
 #dataset=MNIST_Dataset('skin_nskin.npy', (28, 28))
@@ -112,8 +107,7 @@ for epoch in range(epochs):
   epoch_loss = 0.0
 
   for i, data in enumerate(train_loader):
-      print(i)
-      print(data[0])
+      #print(data[0])
       inputs=data
       labels = data #inputs = data[0:2], labels = data[-1]
       inputs=torch.tensor([[int(inputs[0][0]),int(inputs[0][1]),int(inputs[0][2])]])
@@ -135,10 +129,12 @@ for epoch in range(epochs):
 
   with torch.no_grad():
     for i, data in enumerate(val_loader):
-      inputs, labels = data
-
+      inputs=data
+      labels = data #inputs = data[0:2], labels = data[-1]
+      inputs=torch.tensor([[int(inputs[0][0]),int(inputs[0][1]),int(inputs[0][2])]])
       inputs = inputs.to(device=device, dtype=torch.float32)
-      labels = labels.to(device=device, dtype=torch.long)
+      labels = torch.tensor([[int(labels[0][-1])]])
+      labels = labels.to(device=device, dtype=torch.float32)
 
       outputs = model(inputs)
       val_loss += loss_fn(outputs, labels).item()/len(val_loader)
