@@ -60,12 +60,16 @@ class Simple_model(nn.Module):
     self.relu = nn.ReLU()
 
   def forward(self, x):
+    print(x)
     x = self.flatten(x)
+    print(x)
+    print("hello world")
     x = self.relu(self.input_layer(x))
-
+    print("hello world")
     x = self.relu(self.hidden_layer(x))
 
     x = self.output_layer(x)
+    print("hello world")
     return x
 
 #dataset=MNIST_Dataset('skin_nskin.npy', (28, 28))
@@ -88,7 +92,7 @@ model = Simple_model(3, 1)
 loss_fn = nn.BCELoss()
 optimizer = torch.optim.Adam(model.parameters())
 
-print(dataset[0], n_train,n_val)
+print(train_loader, n_train,n_val)
 
 device = 'cpu'
 losses = []
@@ -106,8 +110,9 @@ for epoch in range(epochs):
 
   for i, data in enumerate(train_loader):
       print(i)
-      print(data)
-      inputs, labels = data
+      print(data[0][0:2])
+      inputs=data
+      labels = data #inputs = data[0:2], labels = data[-1]
 
       inputs = inputs.to(device=device, dtype=torch.float32)
       labels = labels.to(device=device, dtype=torch.long)
