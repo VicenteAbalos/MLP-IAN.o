@@ -74,8 +74,8 @@ class Simple_model(nn.Module):
 
 dataset=np.load('skin_nskin.npy')
 
-epochs = 8
-batch_size = 1
+epochs = 2
+batch_size = 10
 train_split = 0.8
 
 n_train = int(len(dataset) * train_split)
@@ -110,13 +110,19 @@ for epoch in range(epochs):
       #print(data[0])
       inputs=data
       labels = data #inputs = data[0:2], labels = data[-1]
-      inputs=torch.tensor([[int(inputs[0][0]),int(inputs[0][1]),int(inputs[0][2])]])
+      linput=[]
+      llabel=[]
+      #if i//10==0:
+      #print("We still going on",i)
+      for j in range(len(inputs)):
+        linput.append([int(inputs[j][0]),int(inputs[j][1]),int(inputs[j][2])])
+        llabel.append([int(labels[j][-1])])
+      inputs=torch.tensor(linput)
       inputs = inputs.to(device=device, dtype=torch.float32)
-      labels = torch.tensor([[int(labels[0][-1])]])
+      labels = torch.tensor(llabel)
       labels = labels.to(device=device, dtype=torch.float32)
 
       optimizer.zero_grad()
-
       outputs = model(inputs)
 
       loss = loss_fn(outputs, labels)
@@ -131,15 +137,20 @@ for epoch in range(epochs):
     for i, data in enumerate(val_loader):
       inputs=data
       labels = data #inputs = data[0:2], labels = data[-1]
-      inputs=torch.tensor([[int(inputs[0][0]),int(inputs[0][1]),int(inputs[0][2])]])
+      print("i =",i)
+      for j in range(batch_size):
+        linput.append([int(inputs[j][0]),int(inputs[j][1]),int(inputs[j][2])])
+        llabel.append([int(labels[j][-1])])
+      inputs=torch.tensor(linput)
       inputs = inputs.to(device=device, dtype=torch.float32)
-      labels = torch.tensor([[int(labels[0][-1])]])
+      labels = torch.tensor(llabel)
       labels = labels.to(device=device, dtype=torch.float32)
 
       outputs = model(inputs)
       val_loss += loss_fn(outputs, labels).item()/len(val_loader)
-
+      #print("we reached acc")
       acc += (outputs.argmax(dim=1) == labels).sum().item()
+      #print("we got past acc")
 
     epoch_accuracy.append(acc/len(val_loader))
     val_losses.append(val_loss)
