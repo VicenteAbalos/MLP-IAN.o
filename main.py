@@ -74,8 +74,8 @@ class Simple_model(nn.Module):
 
 dataset=np.load('skin_nskin.npy')
 
-epochs = 2
-batch_size = 10
+epochs = 8
+batch_size = 128
 train_split = 0.8
 
 n_train = int(len(dataset) * train_split)
@@ -137,7 +137,7 @@ for epoch in range(epochs):
     for i, data in enumerate(val_loader):
       inputs=data
       labels = data #inputs = data[0:2], labels = data[-1]
-      print("i =",i)
+      #print("i =",i)
       for j in range(batch_size):
         linput.append([int(inputs[j][0]),int(inputs[j][1]),int(inputs[j][2])])
         llabel.append([int(labels[j][-1])])
