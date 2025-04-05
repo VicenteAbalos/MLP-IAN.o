@@ -74,7 +74,7 @@ class Simple_model(nn.Module):
 
 dataset=np.load('skin_nskin.npy')
 
-epochs = 2
+epochs = 8
 batch_size = 1
 train_split = 0.8
 
@@ -90,7 +90,7 @@ model = Simple_model(3, 1)
 loss_fn = nn.BCELoss()
 optimizer = torch.optim.Adam(model.parameters())
 
-print(train_loader, n_train,n_val)
+#print(train_loader, n_train,n_val)
 
 device = 'cpu'
 losses = []
@@ -145,3 +145,11 @@ for epoch in range(epochs):
     val_losses.append(val_loss)
 print(losses)
 print(val_losses)
+print(epoch_accuracy)
+
+plt.plot(losses, label='Train Loss')
+plt.plot(val_losses, label='Validation Loss')
+plt.legend()
+plt.xlabel('Epoch')
+plt.ylabel('Loss')
+plt.show()
