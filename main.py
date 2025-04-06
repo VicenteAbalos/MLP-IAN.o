@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 
 import torch
 import torch.nn as nn
-from torch.utils.data import Dataset, DataLoader, random_split
+from torch.utils.data import Dataset, DataLoader, random_split, WeightedRandomSampler
 
 class MNIST_Dataset(Dataset):
   def __init__(self, file_path, img_size, train=True):
@@ -94,7 +94,7 @@ def get_round(out):
 
 dataset=np.load('skin_nskin.npy')
 
-epochs = 30
+epochs = 2
 batch_size = 128
 train_split = 0.8
 
@@ -102,10 +102,23 @@ n_train = int(len(dataset) * train_split)
 n_val = len(dataset) - n_train
 train_set, val_set = random_split(dataset, [n_train, n_val], generator=torch.Generator().manual_seed(0))
 
-loader_args = dict(batch_size=batch_size, num_workers=0, pin_memory=True)
-train_loader = DataLoader(train_set, shuffle=True, **loader_args)
-val_loader = DataLoader(val_set, shuffle=False, drop_last=True, **loader_args)
+class_weights=[1,1]
+train_weight=[0]*len(train_set)
+val_weight=[0]*len(val_set)
 
+for idx in range(len(train_set)):
+  c_train_weight=class_weights[train_set[idx][3]]
+  train_weight[idx]=c_train_weight
+for idx in range(len(val_set)):
+  c_val_weight=class_weights[val_set[idx][3]]
+  val_weight[idx]=c_val_weight
+
+t_sampler=WeightedRandomSampler(train_weight,num_samples=len(train_weight),replacement=True)
+v_sampler=WeightedRandomSampler(val_weight,num_samples=len(val_weight),replacement=True)
+
+loader_args = dict(batch_size=batch_size, num_workers=0, pin_memory=True)
+train_loader = DataLoader(train_set, sampler=t_sampler, **loader_args)
+val_loader = DataLoader(val_set, sampler=v_sampler, drop_last=True, **loader_args)
 model = Simple_model(3, 1)
 #model = Simple_model(3, 2)
 
