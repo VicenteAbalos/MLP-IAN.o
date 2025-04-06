@@ -74,7 +74,7 @@ class Simple_model(nn.Module):
 
 dataset=np.load('skin_nskin.npy')
 
-epochs = 8
+epochs = 30
 batch_size = 128
 train_split = 0.8
 
@@ -151,7 +151,9 @@ for epoch in range(epochs):
       outputs = model(inputs)
       val_loss += loss_fn(outputs, labels).item()/len(val_loader)
       #print("we reached acc")
-      acc += (outputs.argmax(dim=1) == labels).sum().item()
+      for i in range(len(outputs)):
+        if round(float(outputs[i]),1) == labels[i]:
+          acc += 1
       #print("we got past acc")
 
     epoch_accuracy.append(acc/len(val_loader))
@@ -165,4 +167,10 @@ plt.plot(val_losses, label='Validation Loss')
 plt.legend()
 plt.xlabel('Epoch')
 plt.ylabel('Loss')
+plt.show()
+
+plt.plot(epoch_accuracy, label='Accuracy')
+plt.legend()
+plt.xlabel('Epoch')
+plt.ylabel('Accuracy')
 plt.show()
