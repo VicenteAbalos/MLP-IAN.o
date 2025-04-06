@@ -61,6 +61,8 @@ class Simple_model(nn.Module):
 
     self.sigmoid = nn.Sigmoid()
 
+    self.softmax = nn.LogSoftmax(dim=1)
+
   def forward(self, x):
     x = self.flatten(x)
     x = self.input_layer(x)
@@ -86,8 +88,8 @@ loader_args = dict(batch_size=batch_size, num_workers=0, pin_memory=True)
 train_loader = DataLoader(train_set, shuffle=True, **loader_args)
 val_loader = DataLoader(val_set, shuffle=False, drop_last=True, **loader_args)
 
-model = Simple_model(3, 1)
-loss_fn = nn.BCELoss()
+model = Simple_model(3, 2)
+loss_fn = nn.CrossEntropyLoss()
 optimizer = torch.optim.Adam(model.parameters())
 
 #print(train_loader, n_train,n_val)
@@ -113,7 +115,7 @@ for epoch in range(epochs):
       linput=[]
       llabel=[]
       #if i//10==0:
-      #print("We still going on",i)
+      print("We still going on",i)
       for j in range(len(inputs)):
         linput.append([int(inputs[j][0]),int(inputs[j][1]),int(inputs[j][2])])
         llabel.append([int(labels[j][-1])])
