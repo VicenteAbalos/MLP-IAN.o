@@ -51,11 +51,20 @@ class Simple_model(nn.Module):
 
     self.flatten = nn.Flatten()
 
+    #"""
     self.input_layer = nn.Linear(input_size, 8)
 
     self.hidden_layer = nn.Linear(8, 16)
 
     self.output_layer = nn.Linear(16, n_classes)
+    #"""
+    """
+    self.input_layer = nn.Linear(input_size, 4)
+
+    self.hidden_layer = nn.Linear(4, 8)
+
+    self.output_layer = nn.Linear(8, n_classes)
+    """
 
     self.relu = nn.ReLU()
 
@@ -66,10 +75,12 @@ class Simple_model(nn.Module):
   def forward(self, x):
     x = self.flatten(x)
     x = self.input_layer(x)
+
     x = self.relu(self.hidden_layer(x))
+    #x = self.sigmoid(self.hidden_layer(x))
 
     x = self.sigmoid(self.output_layer(x))
-    #print(x)
+    #x = self.softmax(self.output_layer(x))
     return x
 
 def mirror(n):
@@ -79,9 +90,7 @@ def mirror(n):
     return 1
   
 def get_round(out):
-  #print(out)
   return (round(float(out[0]),1),round(float(out[1]),1))
-#dataset1=MNIST_Dataset('skin_nskin.npy', (28, 28))
 
 dataset=np.load('skin_nskin.npy')
 
@@ -97,11 +106,13 @@ loader_args = dict(batch_size=batch_size, num_workers=0, pin_memory=True)
 train_loader = DataLoader(train_set, shuffle=True, **loader_args)
 val_loader = DataLoader(val_set, shuffle=False, drop_last=True, **loader_args)
 
-model = Simple_model(3, 2)
-loss_fn = nn.CrossEntropyLoss()
-optimizer = torch.optim.Adam(model.parameters())
+model = Simple_model(3, 1)
+#model = Simple_model(3, 2)
 
-#print(train_loader, n_train,n_val)
+loss_fn = nn.BCELoss()
+#loss_fn = nn.CrossEntropyLoss()
+
+optimizer = torch.optim.Adam(model.parameters())
 
 device = 'cpu'
 losses = []
@@ -118,16 +129,16 @@ for epoch in range(epochs):
   epoch_loss = 0.0
 
   for i, data in enumerate(train_loader):
-      #print(data[0])
       inputs=data
-      labels = data #inputs = data[0:2], labels = data[-1]
+      labels = data
       linput=[]
       llabel=[]
-      #if i//10==0:
-      #print("We still going on",i)
       for j in range(len(inputs)):
         linput.append([int(inputs[j][0]),int(inputs[j][1]),int(inputs[j][2])])
-        llabel.append([int(labels[j][-1]),mirror(int(labels[j][-1]))])
+
+        llabel.append([int(labels[j][-1])])
+        #llabel.append([int(labels[j][-1]),mirror(int(labels[j][-1]))])
+
       inputs=torch.tensor(linput)
       inputs = inputs.to(device=device, dtype=torch.float32)
       labels = torch.tensor(llabel)
@@ -136,9 +147,7 @@ for epoch in range(epochs):
       optimizer.zero_grad()
       outputs = model(inputs)
 
-      #print(outputs, labels)
       loss = loss_fn(outputs, labels)
-      #print(loss)
       loss.backward()
       optimizer.step()
 
@@ -149,28 +158,26 @@ for epoch in range(epochs):
   with torch.no_grad():
     for i, data in enumerate(val_loader):
       inputs=data
-      labels = data #inputs = data[0:2], labels = data[-1]
-      #print("i =",i)
+      labels = data
       linput=[]
       llabel=[]
       for j in range(batch_size):
         linput.append([int(inputs[j][0]),int(inputs[j][1]),int(inputs[j][2])])
-        llabel.append([int(labels[j][-1]),mirror(int(labels[j][-1]))])
+
+        llabel.append([int(labels[j][-1])])
+        #llabel.append([int(labels[j][-1]),mirror(int(labels[j][-1]))])
+
       inputs=torch.tensor(linput)
       inputs = inputs.to(device=device, dtype=torch.float32)
       labels = torch.tensor(llabel)
       labels = labels.to(device=device, dtype=torch.float32)
 
       outputs = model(inputs)
-      #print(outputs, labels)
-      #print(loss_fn(outputs, labels))
-      #print(loss_fn(outputs, labels).item()/len(val_loader))
       val_loss += loss_fn(outputs, labels).item()/len(val_loader)
-      #print("we reached acc")
       for i in range(len(outputs)):
-        if get_round(outputs[i])[0] == labels[i][0] and get_round(outputs[i])[1] == labels[i][1]:
+        if round(float(outputs[i]),1) == labels[i]:
+        #if get_round(outputs[i])[0] == labels[i][0] and get_round(outputs[i])[1] == labels[i][1]:
           acc += 1
-      #print("we got past acc")
 
     epoch_accuracy.append(acc/len(val_loader))
     val_losses.append(val_loss)
