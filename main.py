@@ -94,7 +94,7 @@ def get_round(out):
 
 dataset=np.load('skin_nskin.npy')
 
-epochs = 2
+epochs = 30
 batch_size = 128
 train_split = 0.8
 
@@ -125,7 +125,8 @@ model = Simple_model(3, 1)
 loss_fn = nn.BCELoss()
 #loss_fn = nn.CrossEntropyLoss()
 
-optimizer = torch.optim.Adam(model.parameters())
+optimizer = torch.optim.SGD(model.parameters())
+
 
 device = 'cpu'
 losses = []
@@ -194,9 +195,10 @@ for epoch in range(epochs):
 
     epoch_accuracy.append(acc/len(val_loader))
     val_losses.append(val_loss)
-print(losses)
+
+"""print(losses)
 print(val_losses)
-print(epoch_accuracy)
+print(epoch_accuracy)"""
 
 plt.plot(losses, label='Train Loss')
 plt.plot(val_losses, label='Validation Loss')
