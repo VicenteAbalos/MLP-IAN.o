@@ -72,6 +72,15 @@ class Simple_model(nn.Module):
     #print(x)
     return x
 
+def mirror(n):
+  if n==1:
+    return 0
+  elif n==0:
+    return 1
+  
+def get_round(out):
+  #print(out)
+  return (round(float(out[0]),1),round(float(out[1]),1))
 #dataset1=MNIST_Dataset('skin_nskin.npy', (28, 28))
 
 dataset=np.load('skin_nskin.npy')
@@ -115,10 +124,10 @@ for epoch in range(epochs):
       linput=[]
       llabel=[]
       #if i//10==0:
-      print("We still going on",i)
+      #print("We still going on",i)
       for j in range(len(inputs)):
         linput.append([int(inputs[j][0]),int(inputs[j][1]),int(inputs[j][2])])
-        llabel.append([int(labels[j][-1])])
+        llabel.append([int(labels[j][-1]),mirror(int(labels[j][-1]))])
       inputs=torch.tensor(linput)
       inputs = inputs.to(device=device, dtype=torch.float32)
       labels = torch.tensor(llabel)
@@ -127,7 +136,9 @@ for epoch in range(epochs):
       optimizer.zero_grad()
       outputs = model(inputs)
 
+      #print(outputs, labels)
       loss = loss_fn(outputs, labels)
+      #print(loss)
       loss.backward()
       optimizer.step()
 
@@ -144,17 +155,20 @@ for epoch in range(epochs):
       llabel=[]
       for j in range(batch_size):
         linput.append([int(inputs[j][0]),int(inputs[j][1]),int(inputs[j][2])])
-        llabel.append([int(labels[j][-1])])
+        llabel.append([int(labels[j][-1]),mirror(int(labels[j][-1]))])
       inputs=torch.tensor(linput)
       inputs = inputs.to(device=device, dtype=torch.float32)
       labels = torch.tensor(llabel)
       labels = labels.to(device=device, dtype=torch.float32)
 
       outputs = model(inputs)
+      #print(outputs, labels)
+      #print(loss_fn(outputs, labels))
+      #print(loss_fn(outputs, labels).item()/len(val_loader))
       val_loss += loss_fn(outputs, labels).item()/len(val_loader)
       #print("we reached acc")
       for i in range(len(outputs)):
-        if round(float(outputs[i]),1) == labels[i]:
+        if get_round(outputs[i])[0] == labels[i][0] and get_round(outputs[i])[1] == labels[i][1]:
           acc += 1
       #print("we got past acc")
 
