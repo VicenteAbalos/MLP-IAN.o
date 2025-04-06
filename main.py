@@ -74,7 +74,7 @@ class Simple_model(nn.Module):
 
 dataset=np.load('skin_nskin.npy')
 
-epochs = 16
+epochs = 8
 batch_size = 128
 train_split = 0.8
 
@@ -138,6 +138,8 @@ for epoch in range(epochs):
       inputs=data
       labels = data #inputs = data[0:2], labels = data[-1]
       #print("i =",i)
+      linput=[]
+      llabel=[]
       for j in range(batch_size):
         linput.append([int(inputs[j][0]),int(inputs[j][1]),int(inputs[j][2])])
         llabel.append([int(labels[j][-1])])
