@@ -70,11 +70,11 @@ class Simple_model(nn.Module):
     #print(x)
     return x
 
-#dataset=MNIST_Dataset('skin_nskin.npy', (28, 28))
+#dataset1=MNIST_Dataset('skin_nskin.npy', (28, 28))
 
 dataset=np.load('skin_nskin.npy')
 
-epochs = 8
+epochs = 16
 batch_size = 128
 train_split = 0.8
 
