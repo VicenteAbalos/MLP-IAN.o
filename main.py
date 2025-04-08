@@ -96,8 +96,34 @@ def one_zero(out):
     return torch.tensor([1,0])
   else:
     return torch.tensor([0,1])
+  
+def eval_image_loader():
+  images=[]
+  mask=[]
+  out=[]
+  l=os.listdir('dataset_with_mask/dataset_with_mask')
+  for i in range(int(len(l)/2)):
+    with Image.open(f'dataset_with_mask/dataset_with_mask/{l[i*2]}') as im:
+      im_pixs=im.load()
+      for j in range(128):
+        for h in range(128):
+          images.append(im_pixs[j,h])
+    with Image.open(f'dataset_with_mask/dataset_with_mask/{l[i*2+1]}') as im:
+      im_mask=im.load()
+      for j in range(128):
+        for h in range(128):
+          mask.append(im_mask[j,h])
+  for i in range(len(mask)):
+    if mask[i]==255:
+      mask[i]=1
+  for i in range(len(images)):
+    out.append([images[i][0],images[i][1],images[i][2],mask[i]])
+  return torch.tensor(out)
 
 dataset=np.load('skin_nskin.npy')
+
+images=eval_image_loader()
+print(images)
 
 epochs = 4
 batch_size = 128
