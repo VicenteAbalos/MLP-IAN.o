@@ -254,7 +254,7 @@ with torch.no_grad():
     lmasks=[]
     for i in range(batch_size):
       limages.append([int(images[i][0]),int(images[i][1]),int(images[i][2])])
-      lmasks.append(int(images[i][-1]))
+      lmasks.append([int(images[i][-1])])
     print(lmasks)
     testimages=torch.tensor(limages)
     testimages=testimages.to(device=device, dtype=torch.float32)
