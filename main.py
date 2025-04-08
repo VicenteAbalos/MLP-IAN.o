@@ -118,7 +118,7 @@ def eval_image_loader():
       mask[i]=1
   for i in range(len(images)):
     out.append([images[i][0],images[i][1],images[i][2],mask[i]])
-  return torch.tensor(out)
+  return torch.tensor(out, dtype=torch.uint8)
 
 dataset=np.load('skin_nskin.npy')
 
@@ -214,8 +214,8 @@ for epoch in range(epochs):
       inputs = inputs.to(device=device, dtype=torch.float32)
       labels = F.one_hot(torch.tensor(llabel)).flatten(start_dim=1,end_dim=-1)
       labels = labels.to(device=device, dtype=torch.float32)
-
-      outputs = (model(inputs))
+      
+      outputs = model(inputs)
       val_loss += loss_fn(outputs, labels).item()/len(val_loader)
       for i in range(len(outputs)):
 
@@ -245,24 +245,30 @@ plt.xlabel('Epoch')
 plt.ylabel('Accuracy')
 plt.show()
 
-#model.eval()
-"""
+model.eval()
+
 with torch.no_grad():
-    for images, labels in val_loader:
+    testimages=images
+    masks=images
+    limages=[]
+    lmasks=[]
+    for i in range(batch_size):
+      limages.append([int(images[i][0]),int(images[i][1]),int(images[i][2])])
+      lmasks.append(int(images[i][-1]))
+    print(lmasks)
+    testimages=torch.tensor(limages)
+    testimages=testimages.to(device=device, dtype=torch.float32)
+    masks = F.one_hot(torch.tensor(lmasks)).flatten(start_dim=1,end_dim=-1)
+    masks = masks.to(device=device, dtype=torch.float32)
+    #print(masks)
+    outputs = model(testimages)
 
-        images = images.to(device=device, dtype=torch.float32)
+    for i in range(len(outputs)):
 
-        outputs = model(images).cpu()
-        _, preds = torch.max(outputs, 1)
+        #if round(float(outputs[i]),1) == labels[i]:
 
-        images = images.cpu()
-
-        fig, axes = plt.subplots(1, 10, figsize=(15, 3))
-        for i in range(10):
-            ax = axes[i]
-            ax.imshow(images[i].squeeze(), cmap='gray')
-            ax.set_title(f"True: {labels[i].item()}\nPredicted: {preds[i].item()}")
-            ax.axis('off')
-        plt.tight_layout()
-        plt.show()
-        break"""
+        out=one_zero(outputs[i])
+        if out[0] == masks[i][0] and out[1] == masks[i][1]:
+          acc += 1
+    epoch_accuracy.append(acc/1)
+print(epoch_accuracy)
