@@ -245,14 +245,18 @@ plt.ylabel('Accuracy')
 plt.show()
 
 model.eval()
-
+accu=0
+tp=0
+tn=0
+fp=0
+fn=0
 with torch.no_grad():
     testimages=images
     masks=images
     limages=[]
     lmasks=[]
-    print(len(images))
-    print(images)
+    #print(len(images))
+    #print(images)
     for i in range(len(images)):
       limages.append([int(testimages[i][0]),int(testimages[i][1]),int(testimages[i][2])])
       lmasks.append([int(testimages[i][-1])])
@@ -268,12 +272,22 @@ with torch.no_grad():
         #if round(float(outputs[i]),1) == labels[i]:
 
         out=one_zero(outputs[i])
-        if out[0] == masks[i][0] and out[1] == masks[i][1]:
-          acc += 1
-    epoch_accuracy.append(acc/1)
-print(epoch_accuracy)
-plt.plot(epoch_accuracy, label='Accuracy')
-plt.legend()
-plt.xlabel('Epoch')
-plt.ylabel('Accuracy')
-plt.show()
+        if (out[0] == masks[i][0]) and (out[1] == masks[i][1]):
+          accu += 1
+          if out[0] == 1:
+            tp+=1
+          elif out[1] == 1:
+            tn+=1
+        else:
+          if out[0]==1:
+            fp+=1
+          elif out[1]==1:
+            fn+=1
+    accu=(accu/len(images))
+    tpr=tp/(tp+fn)
+    fpr=fp/(fp+tn)
+print("accuracy",accu)
+print("True Positive Rate:",tpr)
+print("False Positive Rate:",fpr)
+print("accuracy test:",(tp+tn)/(tp+tn+fp+fn))
+#plt.plot()
