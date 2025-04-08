@@ -8,6 +8,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from torch.utils.data import Dataset, DataLoader, random_split, WeightedRandomSampler
+from sklearn.metrics import roc_curve
 
 class MNIST_Dataset(Dataset):
   def __init__(self, file_path, img_size, train=True):
@@ -286,8 +287,10 @@ with torch.no_grad():
     accu=(accu/len(images))
     tpr=tp/(tp+fn)
     fpr=fp/(fp+tn)
+    roc=roc_curve(masks,outputs)
 print("accuracy",accu)
 print("True Positive Rate:",tpr)
+print("1-TPR:",1-tpr)
 print("False Positive Rate:",fpr)
 print("accuracy test:",(tp+tn)/(tp+tn+fp+fn))
 #plt.plot()
