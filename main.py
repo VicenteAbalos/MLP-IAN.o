@@ -123,7 +123,6 @@ def eval_image_loader():
 dataset=np.load('skin_nskin.npy')
 
 images=eval_image_loader()
-print(images)
 
 epochs = 4
 batch_size = 128
@@ -252,10 +251,11 @@ with torch.no_grad():
     masks=images
     limages=[]
     lmasks=[]
-    for i in range(batch_size):
-      limages.append([int(images[i][0]),int(images[i][1]),int(images[i][2])])
-      lmasks.append([int(images[i][-1])])
-    print(lmasks)
+    print(len(images))
+    print(images)
+    for i in range(len(images)):
+      limages.append([int(testimages[i][0]),int(testimages[i][1]),int(testimages[i][2])])
+      lmasks.append([int(testimages[i][-1])])
     testimages=torch.tensor(limages)
     testimages=testimages.to(device=device, dtype=torch.float32)
     masks = F.one_hot(torch.tensor(lmasks)).flatten(start_dim=1,end_dim=-1)
@@ -272,3 +272,8 @@ with torch.no_grad():
           acc += 1
     epoch_accuracy.append(acc/1)
 print(epoch_accuracy)
+plt.plot(epoch_accuracy, label='Accuracy')
+plt.legend()
+plt.xlabel('Epoch')
+plt.ylabel('Accuracy')
+plt.show()
