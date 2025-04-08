@@ -89,11 +89,17 @@ def mirror(n):
     return 1
   
 def get_round(out):
-  return (round(float(out[0]),1),round(float(out[1]),1))
+  return torch.tensor([round(float(out[0]),1),round(float(out[1]),1)])
+
+def one_zero(out):
+  if float(out[0])>float(out[1]):
+    return torch.tensor([1,0])
+  else:
+    return torch.tensor([0,1])
 
 dataset=np.load('skin_nskin.npy')
 
-epochs = 8
+epochs = 4
 batch_size = 128
 train_split = 0.8
 
@@ -183,15 +189,14 @@ for epoch in range(epochs):
       labels = F.one_hot(torch.tensor(llabel)).flatten(start_dim=1,end_dim=-1)
       labels = labels.to(device=device, dtype=torch.float32)
 
-      outputs = model(inputs)
+      outputs = (model(inputs))
       val_loss += loss_fn(outputs, labels).item()/len(val_loader)
       for i in range(len(outputs)):
 
-        #print(outputs[i])
-        print(get_round(outputs[i])[0], labels[i][0], get_round(outputs[i])[1], labels[i][1])
-        print(get_round(outputs[i])[0] == labels[i][0], get_round(outputs[i])[1] == labels[i][1])
         #if round(float(outputs[i]),1) == labels[i]:
-        if get_round(outputs[i])[0] == labels[i][0] and get_round(outputs[i])[1] == labels[i][1]:
+
+        out=one_zero(outputs[i])
+        if out[0] == labels[i][0] and out[1] == labels[i][1]:
           acc += 1
 
     epoch_accuracy.append(acc/len(val_loader))
