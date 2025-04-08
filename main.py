@@ -6,6 +6,7 @@ import matplotlib.pyplot as plt
 
 import torch
 import torch.nn as nn
+import torch.nn.functional as F
 from torch.utils.data import Dataset, DataLoader, random_split, WeightedRandomSampler
 
 class MNIST_Dataset(Dataset):
@@ -70,8 +71,6 @@ class Simple_model(nn.Module):
 
     self.sigmoid = nn.Sigmoid()
 
-    self.softmax = nn.LogSoftmax(dim=1)
-
   def forward(self, x):
     x = self.flatten(x)
     x = self.input_layer(x)
@@ -79,8 +78,8 @@ class Simple_model(nn.Module):
     x = self.relu(self.hidden_layer(x))
     #x = self.sigmoid(self.hidden_layer(x))
 
-    x = self.sigmoid(self.output_layer(x))
-    #x = self.softmax(self.output_layer(x))
+    #x = self.sigmoid(self.output_layer(x))
+    x = self.output_layer(x)
     return x
 
 def mirror(n):
@@ -94,7 +93,7 @@ def get_round(out):
 
 dataset=np.load('skin_nskin.npy')
 
-epochs = 30
+epochs = 8
 batch_size = 128
 train_split = 0.8
 
@@ -119,11 +118,12 @@ v_sampler=WeightedRandomSampler(val_weight,num_samples=len(val_weight),replaceme
 loader_args = dict(batch_size=batch_size, num_workers=0, pin_memory=True)
 train_loader = DataLoader(train_set, sampler=t_sampler, **loader_args)
 val_loader = DataLoader(val_set, sampler=v_sampler, drop_last=True, **loader_args)
-model = Simple_model(3, 1)
-#model = Simple_model(3, 2)
 
-loss_fn = nn.BCELoss()
-#loss_fn = nn.CrossEntropyLoss()
+#model = Simple_model(3, 1)
+model = Simple_model(3, 2)
+
+#loss_fn = nn.BCELoss()
+loss_fn = nn.CrossEntropyLoss()
 
 optimizer = torch.optim.SGD(model.parameters())
 
@@ -149,13 +149,11 @@ for epoch in range(epochs):
       llabel=[]
       for j in range(len(inputs)):
         linput.append([int(inputs[j][0]),int(inputs[j][1]),int(inputs[j][2])])
-
         llabel.append([int(labels[j][-1])])
-        #llabel.append([int(labels[j][-1]),mirror(int(labels[j][-1]))])
 
-      inputs=torch.tensor(linput)
+      inputs = torch.tensor(linput)
       inputs = inputs.to(device=device, dtype=torch.float32)
-      labels = torch.tensor(llabel)
+      labels = F.one_hot(torch.tensor(llabel)).flatten(start_dim=1,end_dim=-1)
       labels = labels.to(device=device, dtype=torch.float32)
 
       optimizer.zero_grad()
@@ -179,18 +177,21 @@ for epoch in range(epochs):
         linput.append([int(inputs[j][0]),int(inputs[j][1]),int(inputs[j][2])])
 
         llabel.append([int(labels[j][-1])])
-        #llabel.append([int(labels[j][-1]),mirror(int(labels[j][-1]))])
 
       inputs=torch.tensor(linput)
       inputs = inputs.to(device=device, dtype=torch.float32)
-      labels = torch.tensor(llabel)
+      labels = F.one_hot(torch.tensor(llabel)).flatten(start_dim=1,end_dim=-1)
       labels = labels.to(device=device, dtype=torch.float32)
 
       outputs = model(inputs)
       val_loss += loss_fn(outputs, labels).item()/len(val_loader)
       for i in range(len(outputs)):
-        if round(float(outputs[i]),1) == labels[i]:
-        #if get_round(outputs[i])[0] == labels[i][0] and get_round(outputs[i])[1] == labels[i][1]:
+
+        #print(outputs[i])
+        print(get_round(outputs[i])[0], labels[i][0], get_round(outputs[i])[1], labels[i][1])
+        print(get_round(outputs[i])[0] == labels[i][0], get_round(outputs[i])[1] == labels[i][1])
+        #if round(float(outputs[i]),1) == labels[i]:
+        if get_round(outputs[i])[0] == labels[i][0] and get_round(outputs[i])[1] == labels[i][1]:
           acc += 1
 
     epoch_accuracy.append(acc/len(val_loader))
