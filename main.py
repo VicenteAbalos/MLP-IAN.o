@@ -218,3 +218,25 @@ plt.legend()
 plt.xlabel('Epoch')
 plt.ylabel('Accuracy')
 plt.show()
+
+#model.eval()
+"""
+with torch.no_grad():
+    for images, labels in val_loader:
+
+        images = images.to(device=device, dtype=torch.float32)
+
+        outputs = model(images).cpu()
+        _, preds = torch.max(outputs, 1)
+
+        images = images.cpu()
+
+        fig, axes = plt.subplots(1, 10, figsize=(15, 3))
+        for i in range(10):
+            ax = axes[i]
+            ax.imshow(images[i].squeeze(), cmap='gray')
+            ax.set_title(f"True: {labels[i].item()}\nPredicted: {preds[i].item()}")
+            ax.axis('off')
+        plt.tight_layout()
+        plt.show()
+        break"""
