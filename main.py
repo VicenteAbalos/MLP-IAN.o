@@ -9,6 +9,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 from torch.utils.data import Dataset, DataLoader, random_split, WeightedRandomSampler
 from sklearn.metrics import roc_curve
+from sklearn.utils.multiclass import type_of_target
 
 class MNIST_Dataset(Dataset):
   def __init__(self, file_path, img_size, train=True):
@@ -267,12 +268,14 @@ with torch.no_grad():
     masks = masks.to(device=device, dtype=torch.float32)
     #print(masks)
     outputs = model(testimages)
-
+    print("type:",type_of_target(masks))
+    print("type:",type_of_target(outputs[0]))
     for i in range(len(outputs)):
 
         #if round(float(outputs[i]),1) == labels[i]:
 
         out=one_zero(outputs[i])
+        print(roc_curve(masks[i],out))
         if (out[0] == masks[i][0]) and (out[1] == masks[i][1]):
           accu += 1
           if out[0] == 1:
@@ -287,7 +290,6 @@ with torch.no_grad():
     accu=(accu/len(images))
     tpr=tp/(tp+fn)
     fpr=fp/(fp+tn)
-    roc=roc_curve(masks,outputs)
 print("accuracy",accu)
 print("True Positive Rate:",tpr)
 print("1-TPR:",1-tpr)
