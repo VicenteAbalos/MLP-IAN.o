@@ -80,8 +80,8 @@ class Simple_model(nn.Module):
     x = self.relu(self.hidden_layer(x))
     #x = self.sigmoid(self.hidden_layer(x))
 
-    #x = self.sigmoid(self.output_layer(x))
-    x = self.output_layer(x)
+    x = self.sigmoid(self.output_layer(x))
+    #x = self.output_layer(x)
     return x
 
 def mirror(n):
@@ -126,7 +126,7 @@ dataset=np.load('skin_nskin.npy')
 
 images=eval_image_loader()
 
-epochs = 4
+epochs = 30
 batch_size = 128
 train_split = 0.8
 
@@ -145,18 +145,18 @@ for idx in range(len(val_set)):
   c_val_weight=class_weights[val_set[idx][3]]
   val_weight[idx]=c_val_weight
 
-t_sampler=WeightedRandomSampler(train_weight,num_samples=len(train_weight),replacement=True)
-v_sampler=WeightedRandomSampler(val_weight,num_samples=len(val_weight),replacement=True)
+t_sampler = WeightedRandomSampler(train_weight,num_samples=len(train_weight),replacement=True)
+v_sampler = WeightedRandomSampler(val_weight,num_samples=len(val_weight),replacement=True)
 
 loader_args = dict(batch_size=batch_size, num_workers=0, pin_memory=True)
 train_loader = DataLoader(train_set, sampler=t_sampler, **loader_args)
 val_loader = DataLoader(val_set, sampler=v_sampler, drop_last=True, **loader_args)
 
-#model = Simple_model(3, 1)
-model = Simple_model(3, 2)
+model = Simple_model(3, 1)
+#model = Simple_model(3, 2)
 
-#loss_fn = nn.BCELoss()
-loss_fn = nn.CrossEntropyLoss()
+loss_fn = nn.BCELoss()
+#loss_fn = nn.CrossEntropyLoss()
 
 optimizer = torch.optim.SGD(model.parameters())
 
@@ -186,7 +186,10 @@ for epoch in range(epochs):
 
       inputs = torch.tensor(linput)
       inputs = inputs.to(device=device, dtype=torch.float32)
-      labels = F.one_hot(torch.tensor(llabel)).flatten(start_dim=1,end_dim=-1)
+
+      labels = torch.tensor(llabel)
+      #labels = F.one_hot(torch.tensor(llabel)).flatten(start_dim=1,end_dim=-1)
+
       labels = labels.to(device=device, dtype=torch.float32)
 
       optimizer.zero_grad()
@@ -213,17 +216,20 @@ for epoch in range(epochs):
 
       inputs=torch.tensor(linput)
       inputs = inputs.to(device=device, dtype=torch.float32)
-      labels = F.one_hot(torch.tensor(llabel)).flatten(start_dim=1,end_dim=-1)
+
+      labels = torch.tensor(llabel)
+      #labels = F.one_hot(torch.tensor(llabel)).flatten(start_dim=1,end_dim=-1)
+
       labels = labels.to(device=device, dtype=torch.float32)
       
       outputs = model(inputs)
       val_loss += loss_fn(outputs, labels).item()/len(val_loader)
       for i in range(len(outputs)):
 
-        #if round(float(outputs[i]),1) == labels[i]:
+        if round(float(outputs[i]),1) == labels[i]:
+        #out=one_zero(outputs[i])
+        #if out[0] == labels[i][0] and out[1] == labels[i][1]:
 
-        out=one_zero(outputs[i])
-        if out[0] == labels[i][0] and out[1] == labels[i][1]:
           acc += 1
 
     epoch_accuracy.append(acc/len(val_loader))
@@ -248,59 +254,41 @@ plt.show()
 
 model.eval()
 accu=0
-tp=0
-tn=0
-fp=0
-fn=0
 with torch.no_grad():
     testimages=images
     masks=images
     limages=[]
     lmasks=[]
-    #print(len(images))
-    #print(images)
     for i in range(len(images)):
       limages.append([int(testimages[i][0]),int(testimages[i][1]),int(testimages[i][2])])
       lmasks.append([int(testimages[i][-1])])
     testimages=torch.tensor(limages)
     testimages=testimages.to(device=device, dtype=torch.float32)
-    masks = F.one_hot(torch.tensor(lmasks)).flatten(start_dim=1,end_dim=-1)
+    
+    masks = torch.tensor(lmasks)
+    #masks = F.one_hot(torch.tensor(lmasks)).flatten(start_dim=1,end_dim=-1)
+
     masks = masks.to(device=device, dtype=torch.float32)
-    #print(masks)
     outputs = model(testimages)
-    print("type:",type_of_target(masks))
-    print("type:",type_of_target(outputs[0]))
     for i in range(len(outputs)):
-        out=one_zero(outputs[i])
-        if (out[0] == masks[i][0]) and (out[1] == masks[i][1]):
+        
+        if round(float(outputs[i]))==round(float(masks[i])):
+        #out=one_zero(outputs[i])
+        #if (out[0] == masks[i][0]) and (out[1] == masks[i][1]):
+
           accu += 1
-          if out[0] == 1:
-            tp+=1
-          elif out[1] == 1:
-            tn+=1
-        else:
-          if out[0]==1:
-            fp+=1
-          elif out[1]==1:
-            fn+=1
+          
     y=[]
     yp=[]
     for i in masks:
-      y.append(i[0])
+      y.append(i)
+      #y.append(i[0])
     for i in outputs:
-      yp.append(i[0])
+      yp.append(i)
+      #yp.append(i[0])
     fpr,tpr,thresholds=metrics.roc_curve(y,yp)
     disp=metrics.RocCurveDisplay(fpr=fpr,tpr=tpr,estimator_name='test')
-    xy=range(1,len(y))
-    plt.plot(xy,xy,linestyle='dashed')
     disp.plot()
     plt.show()
     accu=(accu/len(images))
-    tpr=tp/(tp+fn)
-    fpr=fp/(fp+tn)
 print("accuracy",accu)
-print("True Positive Rate:",tpr)
-print("1-TPR:",1-tpr)
-print("False Positive Rate:",fpr)
-print("accuracy test:",(tp+tn)/(tp+tn+fp+fn))
-#plt.plot()
