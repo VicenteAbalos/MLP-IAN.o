@@ -8,7 +8,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from torch.utils.data import Dataset, DataLoader, random_split, WeightedRandomSampler
-from sklearn.metrics import roc_curve
+from sklearn import metrics
 from sklearn.utils.multiclass import type_of_target
 
 class MNIST_Dataset(Dataset):
@@ -271,11 +271,7 @@ with torch.no_grad():
     print("type:",type_of_target(masks))
     print("type:",type_of_target(outputs[0]))
     for i in range(len(outputs)):
-
-        #if round(float(outputs[i]),1) == labels[i]:
-
         out=one_zero(outputs[i])
-        print(roc_curve(masks[i],out))
         if (out[0] == masks[i][0]) and (out[1] == masks[i][1]):
           accu += 1
           if out[0] == 1:
@@ -287,6 +283,18 @@ with torch.no_grad():
             fp+=1
           elif out[1]==1:
             fn+=1
+    y=[]
+    yp=[]
+    for i in masks:
+      y.append(i[0])
+    for i in outputs:
+      yp.append(i[0])
+    fpr,tpr,thresholds=metrics.roc_curve(y,yp)
+    disp=metrics.RocCurveDisplay(fpr=fpr,tpr=tpr,estimator_name='test')
+    xy=range(1,len(y))
+    plt.plot(xy,xy,linestyle='dashed')
+    disp.plot()
+    plt.show()
     accu=(accu/len(images))
     tpr=tp/(tp+fn)
     fpr=fp/(fp+tn)
