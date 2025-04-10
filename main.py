@@ -54,20 +54,20 @@ class Simple_model(nn.Module):
 
     self.flatten = nn.Flatten()
 
-    #"""
+    """
     self.input_layer = nn.Linear(input_size, 8)
 
     self.hidden_layer = nn.Linear(8, 16)
 
     self.output_layer = nn.Linear(16, n_classes)
-    #"""
     """
+    #"""
     self.input_layer = nn.Linear(input_size, 4)
 
     self.hidden_layer = nn.Linear(4, 8)
 
     self.output_layer = nn.Linear(8, n_classes)
-    """
+    #"""
 
     self.relu = nn.ReLU()
 
@@ -77,8 +77,8 @@ class Simple_model(nn.Module):
     x = self.flatten(x)
     x = self.input_layer(x)
 
-    x = self.relu(self.hidden_layer(x))
-    #x = self.sigmoid(self.hidden_layer(x))
+    #x = self.relu(self.hidden_layer(x))
+    x = self.sigmoid(self.hidden_layer(x))
 
     x = self.sigmoid(self.output_layer(x))
     #x = self.output_layer(x)
@@ -145,12 +145,14 @@ for idx in range(len(val_set)):
   c_val_weight=class_weights[val_set[idx][3]]
   val_weight[idx]=c_val_weight
 
-t_sampler = WeightedRandomSampler(train_weight,num_samples=len(train_weight),replacement=True)
-v_sampler = WeightedRandomSampler(val_weight,num_samples=len(val_weight),replacement=True)
+#t_sampler = WeightedRandomSampler(train_weight,num_samples=len(train_weight),replacement=True)
+#v_sampler = WeightedRandomSampler(val_weight,num_samples=len(val_weight),replacement=True)
 
 loader_args = dict(batch_size=batch_size, num_workers=0, pin_memory=True)
-train_loader = DataLoader(train_set, sampler=t_sampler, **loader_args)
-val_loader = DataLoader(val_set, sampler=v_sampler, drop_last=True, **loader_args)
+#train_loader = DataLoader(train_set, sampler=t_sampler, **loader_args)
+#val_loader = DataLoader(val_set, sampler=v_sampler, drop_last=True, **loader_args)
+train_loader = DataLoader(train_set, shuffle=True, **loader_args)
+val_loader = DataLoader(val_set, shuffle=False, drop_last=True, **loader_args)
 
 model = Simple_model(3, 1)
 #model = Simple_model(3, 2)
